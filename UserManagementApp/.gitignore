@@ -1,0 +1,47 @@
+# Environment-specific configuration (may contain secrets)
+.env
+.env.*
+appsettings.json
+appsettings.Development.json
+appsettings.Production.json
+
+# Build output
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Unikraft source and build artifacts (huge directory)
+.unikraft/
+man/
+kraft
+kraftld
+Kraftfile
+kraft-compose.yml
+
+# Root filesystem images (large binaries)
+rootfs.cpio
+rootfs_v3.cpio
+rootfs_aot.tar
+fixed_binary
+fixed_binary_v2
+fixed_binary_v3
+
+# Shell scripts (not needed at runtime)
+*.sh
+
+# Documentation
+README.md
+Task_4.pdf
+qemu_output.txt
+
+# Publish output
+publish_output_fw/

@@ -1,0 +1,99 @@
+@model UserManagementApp.Features.Account.Register.RegisterViewModel
+@{
+    // <nota bene>
+    //     Registration form mirrors the login form style for consistency.
+    //     Uses the _AuthLayout (no navbar) to match the screenshot aesthetic.
+    // </nota bene>
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Register";
+    var nameId = UniqueIdExtensions.GetUniqIdValue();
+    var emailId = UniqueIdExtensions.GetUniqIdValue();
+    var passwordId = UniqueIdExtensions.GetUniqIdValue();
+
+    var nameHasErrors = ViewData.ModelState["Name"]?.Errors.Any() == true;
+    var emailHasErrors = ViewData.ModelState["Email"]?.Errors.Any() == true;
+    var passwordHasErrors = ViewData.ModelState["Password"]?.Errors.Any() == true;
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h1 class="h4 fw-bold mb-0">Sign Up to The App</h1>
+                        <p class="text-muted small mt-1">Create your account to get started</p>
+                    </div>
+
+                    @* <important> Display validation error messages from ModelState. </important> *@
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @foreach (var key in ViewData.ModelState.Keys)
+                            {
+                                foreach (var error in ViewData.ModelState[key]!.Errors)
+                                {
+                                    <div>@error.ErrorMessage</div>
+                                }
+                            }
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-controller="Register" asp-action="Index" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.ReturnUrl)
+
+                        <div class="mb-3">
+                            <label for="@nameId" class="form-label fw-medium">Name</label>
+                            <input type="text" id="@nameId" name="Name"
+                                   class="form-control"
+                                   placeholder="John Doe" />
+                            @if (nameHasErrors)
+                            {
+                                <div class="invalid-feedback d-block">@ViewData.ModelState["Name"]!.Errors.First().ErrorMessage</div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="@emailId" class="form-label fw-medium">E-mail</label>
+                            <input type="email" id="@emailId" name="Email"
+                                   class="form-control"
+                                   placeholder="test@example.com" />
+                            @if (emailHasErrors)
+                            {
+                                <div class="invalid-feedback d-block">@ViewData.ModelState["Email"]!.Errors.First().ErrorMessage</div>
+                            }
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="@passwordId" class="form-label fw-medium">Password</label>
+                            <input type="password" id="@passwordId" name="Password"
+                                   class="form-control"
+                                   placeholder="Any non-empty value (even 1 character)" />
+                            @if (passwordHasErrors)
+                            {
+                                <div class="invalid-feedback d-block">@ViewData.ModelState["Password"]!.Errors.First().ErrorMessage</div>
+                            }
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-person-plus"></i> Sign Up
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="small text-muted mb-0">
+                            Already have an account?
+                            <a asp-controller="Login" asp-action="Index" class="text-decoration-none">
+                                Sign In
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,10 @@
+# Documentation and media artifacts (except the demo video)
+*.pdf
+*.png
+*.mp4
+!task4demo.mp4
+Screenshot*/
+
+# Secret configuration files (contain credentials)
+appsettings.json
+appsettings.Production.json

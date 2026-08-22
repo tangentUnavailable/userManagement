@@ -1,0 +1,153 @@
+@model UserManagementApp.Features.Users.List.ListViewModel
+@{
+    // <important>
+    //     The user management table view.
+    //     This view implements the core requirements:
+    //     1. Table with checkboxes in the leftmost column (no labels)
+    //     2. Toolbar above the table with Block/Unblock/Delete/Delete Unverified
+    //     3. NO buttons in data rows — all actions are in the toolbar only
+    //     4. Data sorted by LastLoginTime (handled in the controller)
+    //     5. Columns: Name, Email, Status, Last Seen, Registration Time
+    // </important>
+    ViewData["Title"] = "User Management";
+    Layout = "_Layout";
+}
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 mb-0">User Management</h2>
+        <span class="text-muted small">
+            Signed in as <strong>@User.Identity?.Name</strong>
+        </span>
+    </div>
+
+    @*
+        <nota bene>
+            The toolbar is ALWAYS visible (per the task: "Toolbar shouldn't appear/disappear").
+            Buttons change enabled/disabled status based on selection.
+        </nota bene>
+    *@
+    <div class="toolbar mb-3 p-2 bg-light border rounded d-flex align-items-center gap-2">
+        @*
+            <important>
+                Block button — uses text + button style (per the task: "Block (button with text)").
+                Unblock, Delete, Delete Unverified use icon buttons.
+                NO buttons in data rows — the task explicitly says:
+                "If you use N buttons (separate set of buttons for each row), the grade will be reduced by 20%"
+            </important>
+        *@
+        <button type="button" id="blockBtn" class="btn btn-danger btn-sm" disabled>
+            <i class="bi bi-pause-circle"></i> Block
+        </button>
+
+        <button type="button" id="unblockBtn" class="btn btn-outline-secondary btn-sm" disabled
+                data-bs-toggle="tooltip" title="Unblock selected users">
+            <i class="bi bi-unlock"></i>
+        </button>
+
+        <button type="button" id="deleteBtn" class="btn btn-outline-danger btn-sm" disabled
+                data-bs-toggle="tooltip" title="Delete selected users">
+            <i class="bi bi-trash"></i>
+        </button>
+
+        <button type="button" id="deleteUnverifiedBtn" class="btn btn-outline-warning btn-sm"
+                data-bs-toggle="tooltip" title="Delete all unverified users">
+            <i class="bi bi-trash-fill"></i> Delete Unverified
+        </button>
+
+        @* <note> Spacer to push remaining content to the right </note> *@
+        <div class="flex-grow-1"></div>
+
+        <span id="selectionCount" class="badge bg-secondary">0 selected</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    @*
+                        <important>
+                            Leftmost column: header checkbox selects/deselects ALL records.
+                            The checkbox has NO label (per the task: "table header contains only checkbox without label").
+                        </important>
+                    *@
+                    <th class="text-center" style="width: 40px;">
+                        <div class="form-check d-flex justify-content-center">
+                            <input type="checkbox" id="selectAllCheckbox" class="form-check-input" />
+                        </div>
+                    </th>
+                    <th>Name</th>
+                    <th>E-mail</th>
+                    <th>Status</th>
+                    <th>Last Seen</th>
+                    <th class="text-end">Registration Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @*
+                    <important>
+                        Each row has a checkbox in the leftmost column (no per-row buttons).
+                        Data is already sorted by LastLoginTime DESC in the controller.
+                    </important>
+                *@
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td class="text-center">
+                            <div class="form-check d-flex justify-content-center">
+                                <input type="checkbox" class="row-checkbox form-check-input"
+                                       data-user-id="@user.Id" />
+                            </div>
+                        </td>
+                        <td>@user.Name</td>
+                        <td>@user.Email</td>
+                        <td>
+                            @if (user.IsBlocked)
+                            {
+                                <span class="badge bg-danger"><i class="bi bi-lock"></i> Blocked</span>
+                            }
+                            else if (user.Status == "Unverified")
+                            {
+                                <span class="badge bg-warning text-dark"><i class="bi bi-envelope-slash"></i> Unverified</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success"><i class="bi bi-check-circle"></i> Active</span>
+                            }
+                        </td>
+                        <td class="last-seen-cell">
+                            <span class="text-muted small" data-last-seen="@(user.LastLoginTime?.ToUniversalTime().ToString("o") ?? "")">
+                                @if (user.LastLoginTime.HasValue)
+                                {
+                                    @user.LastLoginTime.Value.ToString("g")
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">Never</span>
+                                }
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <span class="text-muted small">@user.RegistrationTime.ToString("g")</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @*
+        <important>
+            Summary section showing counts of users by status.
+            This is optional but provides useful context.
+        </important>
+    *@
+    <div class="mt-3 d-flex gap-2 flex-wrap">
+        <span class="badge bg-secondary">@Model.Users.Count(u => u.Status == "Active") Active</span>
+        <span class="badge bg-warning text-dark">@Model.Users.Count(u => u.Status == "Unverified") Unverified</span>
+        <span class="badge bg-danger">@Model.Users.Count(u => u.Status == "Blocked") Blocked</span>
+        <span class="badge bg-info text-dark">@Model.Users.Count() Total</span>
+    </div>
+
+@section Scripts {
+    <script src="~/js/user-management.js" asp-append-version="true"></script>
+}

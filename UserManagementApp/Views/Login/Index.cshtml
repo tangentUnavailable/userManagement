@@ -1,0 +1,95 @@
+@model UserManagementApp.Features.Account.Login.LoginViewModel
+@{
+    // <nota bene>
+    //     The screenshot shows a centered card with just the form (no navbar).
+    //     We use a special _AuthLayout that omits the navigation bar.
+    // </nota bene>
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Sign In";
+    var emailId = UniqueIdExtensions.GetUniqIdValue();
+    var passwordId = UniqueIdExtensions.GetUniqIdValue();
+    var rememberId = UniqueIdExtensions.GetUniqIdValue();
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h1 class="h4 fw-bold mb-0">Sign In to The App</h1>
+                        <p class="text-muted small mt-1">Enter your credentials to continue</p>
+                    </div>
+
+                    @* <important> Display validation error messages from ModelState. </important> *@
+                    @{
+                        var emailHasErrors = ViewData.ModelState["Email"]?.Errors.Any() == true;
+                        var passwordHasErrors = ViewData.ModelState["Password"]?.Errors.Any() == true;
+                    }
+                    @if (ViewData.ModelState.ErrorCount > 0 || !string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            @if (emailHasErrors)
+                            {
+                                <div>@ViewData.ModelState["Email"]!.Errors.First().ErrorMessage</div>
+                            }
+                            @if (passwordHasErrors)
+                            {
+                                <div>@ViewData.ModelState["Password"]!.Errors.First().ErrorMessage</div>
+                            }
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    <form asp-controller="Login" asp-action="Index" method="post" novalidate>
+                        @Html.AntiForgeryToken()
+                        @Html.HiddenFor(m => m.ReturnUrl)
+
+                        <div class="mb-3">
+                            <label for="@emailId" class="form-label fw-medium">E-mail</label>
+                            <input type="email" id="@emailId" name="Email"
+                                   class="form-control"
+                                   placeholder="test@example.com" />
+                            @if (emailHasErrors)
+                            {
+                                <div class="invalid-feedback d-block">@ViewData.ModelState["Email"]!.Errors.First().ErrorMessage</div>
+                            }
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="@passwordId" class="form-label fw-medium">Password</label>
+                            <input type="password" id="@passwordId" name="Password"
+                                   class="form-control"
+                                   placeholder="Any non-empty value" />
+                            @if (passwordHasErrors)
+                            {
+                                <div class="invalid-feedback d-block">@ViewData.ModelState["Password"]!.Errors.First().ErrorMessage</div>
+                            }
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" id="@rememberId" name="RememberMe" value="true"
+                                   class="form-check-input" @(Model.RememberMe ? "checked" : "") />
+                            <label for="@rememberId" class="form-check-label">Remember me</label>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-sign-in-alt"></i> Sign In
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="small text-muted mb-0">
+                            Don't have an account?
+                            <a asp-controller="Register" asp-action="Index" class="text-decoration-none">
+                                Sign Up
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

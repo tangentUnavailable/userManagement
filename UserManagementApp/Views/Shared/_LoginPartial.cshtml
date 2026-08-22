@@ -1,0 +1,21 @@
+@using System.Security.Claims
+@using UserManagementApp.Infrastructure.Extensions
+@if (User?.Identity?.IsAuthenticated == true)
+{
+    <form asp-controller="Logout" asp-action="Index" method="post" class="d-flex align-items-center">
+        @* <important> Anti-forgery token to prevent CSRF on logout. </important> *@
+        @Html.AntiForgeryToken()
+        <span class="navbar-text me-3 text-muted small">
+            Signed in as <strong>@User.GetUserName()</strong>
+        </span>
+        <button type="submit" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+    </form>
+}
+else
+{
+    <a class="nav-link text-dark" asp-controller="Login" asp-action="Index">
+        <i class="bi bi-person-circle"></i> Sign In
+    </a>
+}

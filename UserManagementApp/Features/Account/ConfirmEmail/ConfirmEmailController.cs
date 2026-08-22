@@ -35,6 +35,7 @@ public class ConfirmEmailController : Controller
         if (user.Status == UserStatus.Unverified)
         {
             user.Status = UserStatus.Active;
+            user.ConfirmationToken = string.Empty;
             _dbContext.Users.Update(user);
             await _dbContext.SaveChangesAsync();
 
@@ -48,3 +49,4 @@ public class ConfirmEmailController : Controller
         return RedirectToAction("Index", "Login", new { area = "" });
     }
 }
+

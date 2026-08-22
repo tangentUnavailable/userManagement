@@ -1,14 +1,6 @@
 @model UserManagementApp.Features.Users.List.ListViewModel
 @{
-    // <important>
-    //     The user management table view.
-    //     This view implements the core requirements:
-    //     1. Table with checkboxes in the leftmost column (no labels)
-    //     2. Toolbar above the table with Block/Unblock/Delete/Delete Unverified
-    //     3. NO buttons in data rows — all actions are in the toolbar only
-    //     4. Data sorted by LastLoginTime (handled in the controller)
-    //     5. Columns: Name, Email, Status, Last Seen, Registration Time
-    // </important>
+    // User management table: checkbox header, toolbar actions, no row buttons.
     ViewData["Title"] = "User Management";
     Layout = "_Layout";
 }
@@ -20,21 +12,9 @@
         </span>
     </div>
 
-    @*
-        <nota bene>
-            The toolbar is ALWAYS visible (per the task: "Toolbar shouldn't appear/disappear").
-            Buttons change enabled/disabled status based on selection.
-        </nota bene>
-    *@
+    @* Toolbar always visible; buttons enable/disable based on selection. *@
     <div class="toolbar mb-3 p-2 bg-light border rounded d-flex align-items-center gap-2">
-        @*
-            <important>
-                Block button — uses text + button style (per the task: "Block (button with text)").
-                Unblock, Delete, Delete Unverified use icon buttons.
-                NO buttons in data rows — the task explicitly says:
-                "If you use N buttons (separate set of buttons for each row), the grade will be reduced by 20%"
-            </important>
-        *@
+        @* Block uses text button; others use icon buttons. No buttons in data rows. *@
         <button type="button" id="blockBtn" class="btn btn-danger btn-sm" disabled>
             <i class="bi bi-pause-circle"></i> Block
         </button>
@@ -54,7 +34,7 @@
             <i class="bi bi-trash-fill"></i> Delete Unverified
         </button>
 
-        @* <note> Spacer to push remaining content to the right </note> *@
+        @* Spacer to push remaining content to the right. *@
         <div class="flex-grow-1"></div>
 
         <span id="selectionCount" class="badge bg-secondary">0 selected</span>
@@ -64,12 +44,7 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    @*
-                        <important>
-                            Leftmost column: header checkbox selects/deselects ALL records.
-                            The checkbox has NO label (per the task: "table header contains only checkbox without label").
-                        </important>
-                    *@
+                    @* Header checkbox selects/deselects all rows (no label). *@
                     <th class="text-center" style="width: 40px;">
                         <div class="form-check d-flex justify-content-center">
                             <input type="checkbox" id="selectAllCheckbox" class="form-check-input" />
@@ -83,12 +58,7 @@
                 </tr>
             </thead>
             <tbody>
-                @*
-                    <important>
-                        Each row has a checkbox in the leftmost column (no per-row buttons).
-                        Data is already sorted by LastLoginTime DESC in the controller.
-                    </important>
-                *@
+                @* Each row has a checkbox - no per-row buttons. Sorted by LastLoginTime DESC. *@
                 @foreach (var user in Model.Users)
                 {
                     <tr>
@@ -135,12 +105,7 @@
         </table>
     </div>
 
-    @*
-        <important>
-            Summary section showing counts of users by status.
-            This is optional but provides useful context.
-        </important>
-    *@
+    @* Summary counts by user status. *@
     <div class="mt-3 d-flex gap-2 flex-wrap">
         <span class="badge bg-secondary">@Model.Users.Count(u => u.Status == "Active") Active</span>
         <span class="badge bg-warning text-dark">@Model.Users.Count(u => u.Status == "Unverified") Unverified</span>

@@ -31,7 +31,10 @@ public class UnblockController : Controller
         var unblockedCount = 0;
         foreach (var user in users)
         {
-            user.Status = UserStatus.Active;
+            // Restore the status that existed before the block.
+            // If ConfirmationToken is still set, the email was never confirmed → Unverified.
+            // If ConfirmationToken was cleared by ConfirmEmailController, email was confirmed → Active.
+            user.Status = string.IsNullOrEmpty(user.ConfirmationToken) ? UserStatus.Active : UserStatus.Unverified;
             _dbContext.Users.Update(user);
             unblockedCount++;
         }

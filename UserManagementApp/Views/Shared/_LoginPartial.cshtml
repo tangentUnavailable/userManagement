@@ -3,7 +3,7 @@
 @if (User?.Identity?.IsAuthenticated == true)
 {
     <form asp-controller="Logout" asp-action="Index" method="post" class="d-flex align-items-center">
-        @* <important> Anti-forgery token to prevent CSRF on logout. </important> *@
+        @* Anti-forgery token to prevent CSRF on logout. *@
         @Html.AntiForgeryToken()
         <span class="navbar-text me-3 text-muted small">
             Signed in as <strong>@User.GetUserName()</strong>

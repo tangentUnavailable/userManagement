@@ -34,7 +34,7 @@
     </header>
 
     <main class="container-fluid" role="main">
-        @* <important> Display status messages (success/error/info) from TempData. </important> *@
+        @* Display status messages (success/error/info) from TempData. *@
         <partial name="_StatusMessage" />
 
         @RenderBody()
@@ -51,12 +51,7 @@
     <script src="~/js/user-management.js" asp-append-version="true"></script>
     @RenderSection("Scripts", required: false)
 
-    @*
-        <nota bene>
-            Initialize Bootstrap tooltips globally.
-            Tooltips are required by the task: "Implement: tooltips".
-        </nota bene>
-    *@
+    @* Initialize Bootstrap tooltips globally (required by task: "Implement: tooltips"). *@
     <script>
         $(document).ready(function () {
             var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));

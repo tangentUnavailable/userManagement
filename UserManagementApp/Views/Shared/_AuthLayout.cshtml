@@ -12,14 +12,9 @@
     @RenderSection("Head", required: false)
 </head>
 <body>
-    @*
-        <important>
-            This layout is used for auth pages (Login, Register) — no navbar.
-            The screenshots show a clean, centered card without navigation.
-        </important>
-    *@
+    @* Auth layout for Login/Register pages - no navbar, centered card. *@
     <main class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-        @Html.Raw(TempData["SuccessMessage"] as string ?? "")
+        <partial name="_StatusMessage" />
         @RenderBody()
     </main>
 

@@ -102,7 +102,7 @@ public class RegisterController : Controller
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
             // Race condition: another request inserted the same email between
-            // our pre-check and SaveChanges. The UNIQUE INDEX caught it here.
+            // the pre-check and SaveChanges. The UNIQUE INDEX caught it here.
             ModelState.AddModelError("Email", "This email address is already registered.");
             return View("Index", model);
         }

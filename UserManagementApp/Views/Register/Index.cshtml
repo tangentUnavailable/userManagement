@@ -1,9 +1,6 @@
 @model UserManagementApp.Features.Account.Register.RegisterViewModel
 @{
-    // <nota bene>
-    //     Registration form mirrors the login form style for consistency.
-    //     Uses the _AuthLayout (no navbar) to match the screenshot aesthetic.
-    // </nota bene>
+    // Registration form mirrors login form style. Uses _AuthLayout (no navbar).
     Layout = "_AuthLayout";
     ViewData["Title"] = "Register";
     var nameId = UniqueIdExtensions.GetUniqIdValue();
@@ -25,7 +22,7 @@
                         <p class="text-muted small mt-1">Create your account to get started</p>
                     </div>
 
-                    @* <important> Display validation error messages from ModelState. </important> *@
+                    @* Display validation error messages from ModelState. *@
                     @if (ViewData.ModelState.ErrorCount > 0)
                     {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">

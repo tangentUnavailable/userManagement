@@ -4,10 +4,6 @@ using MimeKit;
 
 namespace UserManagementApp.Infrastructure.Services;
 
-/// <summary>
-/// Email service implementation using MailKit SMTP.
-/// Configuration is read from appsettings under the "Smtp" key.
-/// </summary>
 public class EmailService : IEmailService
 {
     private readonly SmtpOptions _options;
@@ -19,8 +15,8 @@ public class EmailService : IEmailService
         _logger = logger;
     }
 
-    // Called from a background task, so it must not throw.
-    // If sending fails, we log the error and continue — the user is still registered.
+    // Runs in a background task, so swallow errors here.
+    // A failed email should never break the registration flow.
     public async Task SendConfirmationEmailAsync(string email, string name, string confirmationLink)
     {
         try
@@ -41,7 +37,7 @@ public class EmailService : IEmailService
                           Confirm Email
                       </a></p>
                     <p>If you did not register, you can safely ignore this email.</p>
-                    <p>&mdash; The User Management Team</p>
+                    <p>The User Management Team</p>
                 </body>
                 </html>";
 
@@ -58,15 +54,11 @@ public class EmailService : IEmailService
         }
         catch (Exception ex)
         {
-            // Log the error but don't rethrow — async email must not break registration
             _logger.LogError(ex, "Failed to send confirmation email to {Email}", email);
         }
     }
 }
 
-/// <summary>
-/// Strongly-typed configuration for SMTP settings. Bound from appsettings.json under "Smtp".
-/// </summary>
 public class SmtpOptions
 {
     public string SmtpServer { get; set; } = null!;

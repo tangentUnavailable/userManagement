@@ -2,11 +2,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace UserManagementApp.Infrastructure.Data;
 
-/// <summary>
-/// Application database context for the user management system.
-/// The UNIQUE INDEX on Email is created here — not in application code —
-/// so the database engine itself enforces email uniqueness.
-/// </summary>
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -20,20 +15,19 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // UNIQUE INDEX on Email — the ultimate guarantee against duplicate emails.
-        // Distinct from the PK on Id (Guid).
+        // Email uniqueness is enforced by the database, not just the app.
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique()
             .HasDatabaseName("IX_Users_Email_Unique");
 
-        // Store the UserStatus enum as an integer in the database
+        // Store the UserStatus enum as an integer in the database.
         modelBuilder.Entity<User>()
             .Property(u => u.Status)
             .HasConversion<int>();
     }
 
-    // Auto-populate CreatedAt and UpdatedAt timestamps on every SaveChanges
+    // Auto-populate CreatedAt and UpdatedAt on every SaveChanges.
     public override int SaveChanges(bool acceptAllOnSuccess)
     {
         PopulateTimestamps();

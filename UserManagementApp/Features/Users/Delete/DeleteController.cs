@@ -5,7 +5,9 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Users.Delete;
 
-//     Controller for the "Delete" toolbar action (icon button).
+/// <summary>
+/// Hard-deletes selected users via AJAX.
+/// </summary>
 public class DeleteController : Controller
 {
     private readonly ApplicationDbContext _dbContext;

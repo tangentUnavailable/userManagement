@@ -5,7 +5,9 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Users.DeleteUnverified;
 
-//     Controller for the "Delete Unverified" toolbar action (icon button).
+/// <summary>
+/// Bulk-deletes all unverified users. No selection needed.
+/// </summary>
 public class DeleteUnverifiedController : Controller
 {
     private readonly ApplicationDbContext _dbContext;

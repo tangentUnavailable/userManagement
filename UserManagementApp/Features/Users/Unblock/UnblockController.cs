@@ -5,7 +5,10 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Users.Unblock;
 
-//     Controller for the "Unblock" toolbar action (icon button).
+/// <summary>
+/// Unblocks selected users via AJAX. Restores them to whatever status
+/// they had before being blocked.
+/// </summary>
 public class UnblockController : Controller
 {
     private readonly ApplicationDbContext _dbContext;
@@ -31,9 +34,8 @@ public class UnblockController : Controller
         var unblockedCount = 0;
         foreach (var user in users)
         {
-            // Restore the status that existed before the block.
-            // If ConfirmationToken is still set, the email was never confirmed → Unverified.
-            // If ConfirmationToken was cleared by ConfirmEmailController, email was confirmed → Active.
+            // If the confirmation token is empty, the email was verified
+            // so we go back to Active. Otherwise they're still Unverified.
             user.Status = string.IsNullOrEmpty(user.ConfirmationToken) ? UserStatus.Active : UserStatus.Unverified;
             _dbContext.Users.Update(user);
             unblockedCount++;

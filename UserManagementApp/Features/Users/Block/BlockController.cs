@@ -5,7 +5,9 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Users.Block;
 
-//     Controller for the "Block" toolbar action.
+/// <summary>
+/// Blocks selected users via AJAX.
+/// </summary>
 [Authorize]
 public class BlockController : Controller
 {

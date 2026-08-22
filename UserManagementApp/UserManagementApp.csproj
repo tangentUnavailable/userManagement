@@ -25,12 +25,11 @@
   </ItemGroup>
 
   <!--
-    <important>
-      Trimming suppressions for ASP.NET Core MVC.
-      The IL Trimmer removes types loaded via reflection (e.g.
-      ConsolidatedAssemblyApplicationPartFactory), causing TypeLoadException
-      at runtime. We preserve the MVC assemblies that use dynamic type discovery.
-    </important>
+    Trimming suppressions for ASP.NET Core MVC.
+    The IL Trimmer removes types that are loaded via reflection, such as
+    those used by ConsolidatedAssemblyApplicationPartFactory, which causes
+    TypeLoadException at runtime. These entries keep the MVC assemblies
+    that rely on dynamic type discovery.
   -->
   <ItemGroup>
     <TrimmerRootAssembly Include="Microsoft.AspNetCore.Mvc.Razor" />

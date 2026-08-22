@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace UserManagementApp.Features.Account.Logout;
 
-//     Controller for logging out the current user.
+/// <summary>
+/// Signs the current user out of the cookie auth scheme.
+/// </summary>
 public class LogoutController : Controller
 {
     [HttpPost]

@@ -9,8 +9,8 @@ using UserManagementApp.Infrastructure.Services;
 namespace UserManagementApp.Features.Account.Register;
 
 /// <summary>
-/// Controller for user registration.
-/// The register endpoint is EXEMPT from UserStatusMiddleware (no user is logged in yet).
+/// Registration endpoint. Exempt from UserStatusMiddleware since no one
+/// is signed in yet.
 /// </summary>
 public class RegisterController : Controller
 {
@@ -33,7 +33,6 @@ public class RegisterController : Controller
         _passwordHasher = new PasswordHasher<User>();
     }
 
-    // GET: Display the registration form.
     [HttpGet]
     public IActionResult Index(string? returnUrl = null)
     {
@@ -44,10 +43,6 @@ public class RegisterController : Controller
         return View("Index", new RegisterViewModel { ReturnUrl = returnUrl ?? "/Login" });
     }
 
-    // POST: Handle registration form submission.
-    // Email uniqueness is enforced by the database UNIQUE INDEX,
-    // and also checked at the application layer for a better error message.
-    // Any non-empty password is accepted. Users can log in even when unverified.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Index(RegisterViewModel model, string? returnUrl = null)
@@ -60,11 +55,10 @@ public class RegisterController : Controller
             return View("Index", model);
         }
 
-        // Normalize email (trim + lowercase) to prevent case-variant duplicates
         var normalizedEmail = model.Email.Trim().ToLowerInvariant();
 
-        // Pre-check: look up existing email for a better UX error message.
-        // The UNIQUE INDEX is the ultimate guarantee; this just provides fast feedback.
+        // Pre-check so we can show a friendly error instead of a DB exception.
+        // The unique index is still the real backstop.
         var existingUser = await _dbContext.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Email.ToLower() == normalizedEmail);
@@ -75,7 +69,6 @@ public class RegisterController : Controller
             return View("Index", model);
         }
 
-        // Create the user with "Unverified" status
         var user = new User
         {
             Id = Guid.NewGuid(),
@@ -84,54 +77,42 @@ public class RegisterController : Controller
             Status = UserStatus.Unverified,
             RegistrationTime = DateTime.UtcNow,
             LastLoginTime = null,
-            // ConfirmationToken is used in the email confirmation link
             ConfirmationToken = Guid.NewGuid().ToString(),
         };
 
-        // Hash the password using PBKDF2
         user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
 
         _dbContext.Users.Add(user);
 
         try
         {
-            // Save to database. The UNIQUE INDEX throws DbUpdateException on
-            // race-condition duplicate inserts — handled in the catch below.
             await _dbContext.SaveChangesAsync();
         }
         catch (DbUpdateException ex) when (IsUniqueConstraintViolation(ex))
         {
-            // Race condition: another request inserted the same email between
-            // the pre-check and SaveChanges. The UNIQUE INDEX caught it here.
+            // Lost a race with another registration request. The index caught it.
             ModelState.AddModelError("Email", "This email address is already registered.");
             return View("Index", model);
         }
 
-        // Queue the confirmation email for async sending
         var baseUrl = $"{_httpContextAccessor.HttpContext!.Request.Scheme}://" +
                       $"{_httpContextAccessor.HttpContext.Request.Host}";
         var confirmationLink = $"{baseUrl}/ConfirmEmail?token={user.ConfirmationToken}";
 
         _taskQueue.QueueBackgroundWorkItem(async (cancellationToken) =>
         {
-            // Use IServiceScopeFactory (singleton) to create a fresh DI scope
-            // so the background task can resolve IEmailService without a
-            // request-scoped IServiceProvider that would be disposed.
             using var scope = _scopeFactory.CreateScope();
             var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
             await emailService.SendConfirmationEmailAsync(user.Email, user.Name, confirmationLink);
         });
 
-        // Show success message and redirect to login
         TempData["SuccessMessage"] = "Registration successful! A confirmation email has been sent. " +
                                      "You can log in now with unverified status.";
 
         return RedirectToAction("Index", "Login");
     }
 
-    // Helper: checks if a DbUpdateException is caused by a unique constraint violation.
-    // PostgreSQL throws PostgresException with SQLSTATE 23505 (unique_violation).
-    // See: https://www.postgresql.org/docs/current/errcodes-appendix.html
+    // PostgreSQL throws 23505 on unique violations.
     private static bool IsUniqueConstraintViolation(DbUpdateException ex)
     {
         if (ex.InnerException is Npgsql.PostgresException pgEx)

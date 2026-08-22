@@ -9,7 +9,7 @@ Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Listen on the PORT env var if provided (for container/PaaS deployments)
+// Listen on the PORT env var if set, otherwise fall back to port 80.
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
 {
@@ -44,7 +44,7 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Middleware order: authentication → user status check → authorization
+// Dev gets detailed errors and HTTPS. Production serves plain HTTP on port 80.
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -67,14 +67,15 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-// Apply migrations and seed default admin user
+// Make sure migrations are applied and seed an admin user on first run.
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
-        // Retry migration on transient failures (e.g., database not yet ready)
+
+        // The database might not be ready yet in container environments.
         var retryCount = 0;
         var maxRetries = 15;
         while (true)
@@ -95,7 +96,7 @@ using (var scope = app.Services.CreateScope())
             }
         }
 
-        // Seed a default admin user if the database is empty
+        // Seed a default admin if the table is empty.
         if (!await context.Users.AnyAsync())
         {
             var passwordHasher = new PasswordHasher<User>();

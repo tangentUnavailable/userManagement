@@ -5,7 +5,9 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Users.List;
 
-//     Controller for displaying the user management table.
+/// <summary>
+/// Shows the user management table, sorted by most recent login.
+/// </summary>
 public class ListController : Controller
 {
     private readonly ApplicationDbContext _dbContext;

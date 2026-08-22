@@ -7,17 +7,17 @@ using UserManagementApp.Infrastructure.Extensions;
 namespace UserManagementApp.Infrastructure.Middleware;
 
 /// <summary>
-///     Middleware that checks if the authenticated user exists in the database
-///     and is not blocked. If the user account is blocked or deleted, the request
-///     is redirected to the login page.
-///     Runs AFTER authentication (UseAuthentication) and BEFORE authorization (UseAuthorization).
+/// Checks the authenticated user against the database on every request.
+/// Signs them out and bounces them to the login page if their account is
+/// blocked or has been deleted. Placed between UseAuthentication and
+/// UseAuthorization in the middleware pipeline.
 /// </summary>
 public class UserStatusMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<UserStatusMiddleware> _logger;
 
-    // Paths that bypass the user-status check (login, register, static files, etc.)
+    // Paths that skip the user-status check entirely.
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
         "/Login",
@@ -38,14 +38,14 @@ public class UserStatusMiddleware
 
     public async Task InvokeAsync(HttpContext context, ApplicationDbContext dbContext)
     {
-        // Skip the check for exempt paths (login, register, static files, etc.)
+        // Let static files, login, register, etc. through without checking.
         if (ExemptPaths.Any(path => context.Request.Path.StartsWithSegments(path, StringComparison.OrdinalIgnoreCase)))
         {
             await _next(context);
             return;
         }
 
-        // If the user is authenticated, verify their database record
+        // For authenticated users, make sure the account still exists and is not blocked.
         if (context.User?.Identity?.IsAuthenticated == true)
         {
             var userId = context.User.GetUserId();
@@ -55,7 +55,7 @@ public class UserStatusMiddleware
                     .AsNoTracking()
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                // User is deleted (not found) or blocked → sign out and redirect
+                // Account deleted or blocked: sign out and send them to login.
                 if (user == null || user.Status == UserStatus.Blocked)
                 {
                     _logger.LogWarning(
@@ -69,14 +69,11 @@ public class UserStatusMiddleware
             }
         }
 
-        // For non-authenticated users, [Authorize] on controllers handles the redirect
+        // Unauthenticated users are handled by [Authorize] on the controllers.
         await _next(context);
     }
 }
 
-/// <summary>
-///     Extension method for registering the middleware in Program.cs.
-/// </summary>
 public static class UserStatusMiddlewareExtensions
 {
     public static IApplicationBuilder UseUserStatus(this IApplicationBuilder builder)

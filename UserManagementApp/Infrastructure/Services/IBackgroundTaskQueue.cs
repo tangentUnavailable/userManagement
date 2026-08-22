@@ -1,6 +1,5 @@
 namespace UserManagementApp.Infrastructure.Services;
 
-//     Represents a unit of work that can be processed in the background.
 public interface IBackgroundTaskQueue
 {
     void QueueBackgroundWorkItem(Func<CancellationToken, Task> workItem);

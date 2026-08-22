@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UserManagementApp.Features.Account.Login;
 
-//     View model for the login form.
 public class LoginViewModel
 {
     [Required(ErrorMessage = "Email is required")]

@@ -1,6 +1,5 @@
 namespace UserManagementApp.Infrastructure.Services;
 
-//     Background service that processes queued work items (e.g., sending confirmation emails).
 public class QueuedBackgroundService : BackgroundService
 {
     private readonly IBackgroundTaskQueue _queue;

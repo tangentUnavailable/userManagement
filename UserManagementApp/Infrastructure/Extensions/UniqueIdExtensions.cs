@@ -2,9 +2,9 @@ using System.Security.Claims;
 
 namespace UserManagementApp.Infrastructure.Extensions;
 
-//     Extension methods for generating unique IDs and working with user sessions.
 public static class UniqueIdExtensions
 {
+    // Short hex string used for unique HTML element IDs.
     public static string GetUniqIdValue()
     {
         return Guid.NewGuid().ToString("N")[..8];

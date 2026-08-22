@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UserManagementApp.Features.Account.Register;
 
-//     View model for the registration form.
 public class RegisterViewModel
 {
     [Required(ErrorMessage = "Name is required")]

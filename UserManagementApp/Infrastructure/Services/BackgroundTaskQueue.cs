@@ -2,7 +2,6 @@ using System.Threading.Channels;
 
 namespace UserManagementApp.Infrastructure.Services;
 
-//     Thread-safe background task queue using System.Threading.Channels.
 public class BackgroundTaskQueue : IBackgroundTaskQueue
 {
     private readonly Channel<Func<CancellationToken, Task>> _queue;

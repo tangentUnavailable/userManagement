@@ -4,7 +4,10 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp.Features.Account.ConfirmEmail;
 
-//     Controller for email confirmation.
+/// <summary>
+/// Handles the link in the confirmation email. Marks the user's account
+/// as Active and clears the confirmation token so it can't be reused.
+/// </summary>
 public class ConfirmEmailController : Controller
 {
     private readonly ApplicationDbContext _dbContext;
@@ -49,4 +52,3 @@ public class ConfirmEmailController : Controller
         return RedirectToAction("Index", "Login", new { area = "" });
     }
 }
-

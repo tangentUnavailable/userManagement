@@ -4,8 +4,10 @@ using UserManagementApp.Infrastructure.Data;
 
 namespace UserManagementApp;
 
-//     Minimal home controller — handles redirects for authenticated
-//     users and the error page.
+/// <summary>
+/// Barebones home controller. Just redirects to login or the user list,
+/// and renders the error page.
+/// </summary>
 public class HomeController : Controller
 {
     public IActionResult Index()

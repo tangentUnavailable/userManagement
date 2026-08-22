@@ -1,25 +1,16 @@
-// =============================================================================
-// User Management JavaScript
-// <important>
-//     Handles all interactive behavior on the user management table page:
-//     1. Select-all / deselect-all checkbox in the table header
-//     2. Toolbar button enable/disable based on row selection
-//     3. AJAX calls for Block / Unblock / Delete / Delete Unverified actions
-//     4. Relative time display (e.g., "5 minutes ago", "less than a minute ago")
-//     5. Bootstrap tooltip initialization
-// </important>
-// =============================================================================
+// User management page interactions:
+//   - Select all / select none checkbox in the table header
+//   - Toolbar buttons enable based on whether rows are selected
+//   - AJAX calls for Block, Unblock, Delete, and Delete Unverified
+//   - Convert ISO timestamps into relative time strings ("5 minutes ago")
+//   - Bootstrap tooltip initialization
 
 $(document).ready(function() {
-  // -------------------------------------------------------------------------
-  // <nota bene>
-  //     Get the anti-forgery token cookie for AJAX POST requests.
-  //     ASP.NET Core validates this on every POST to prevent CSRF attacks.
-  // </nota bene>
+  // Grab the anti-forgery token from the hidden form field, falling back
+  // to the cookie if this page doesn't have a form on it.
   function getAntiForgeryToken() {
     var token = $("input[name='__RequestVerificationToken']").val();
     if (!token) {
-      // <note> Fall back to cookie-based token (for AJAX-only pages) </note>
       token = getCookie("__RequestVerificationToken");
     }
     return token;
@@ -30,25 +21,15 @@ $(document).ready(function() {
     return match ? decodeURIComponent(match[2]) : null;
   }
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Select-all / deselect-all logic.
-  //     Clicking the header checkbox selects or deselects ALL row checkboxes.
-  //     The header checkbox has NO label (per the task requirement).
-  // </important>
-  // -------------------------------------------------------------------------
+  // Select-all in the header checkbox toggles every row checkbox below it.
   $("#selectAllCheckbox").on("change", function() {
     var isChecked = $(this).is(":checked");
     $(".row-checkbox").prop("checked", isChecked);
     updateToolbarButtons();
   });
 
-  // <note>
-  //     When individual row checkboxes change, update the header checkbox state.
-  //     If all are checked → header is checked.
-  //     If none are checked → header is unchecked.
-  //     If some are checked → header is indeterminate.
-  // </note>
+  // When a row checkbox changes, update the header checkbox to reflect
+  // the new state (all, none, or indeterminate).
   $(document).on("change", ".row-checkbox", function() {
     var total = $(".row-checkbox").length;
     var checkedCount = $(".row-checkbox:checked").length;
@@ -70,31 +51,17 @@ $(document).ready(function() {
     updateToolbarButtons();
   });
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Update toolbar button enabled/disabled state based on selection.
-  //     The toolbar itself is ALWAYS visible — only individual buttons toggle.
-  // </important>
-  // -------------------------------------------------------------------------
+  // Toolbar buttons are always visible but disabled when nothing is selected.
   function updateToolbarButtons() {
     var selectedCount = $(".row-checkbox:checked").length;
     $("#selectionCount").text(selectedCount + " selected");
 
-    // Block and Unblock can only act on selected rows
     $("#blockBtn").prop("disabled", selectedCount === 0);
     $("#unblockBtn").prop("disabled", selectedCount === 0);
     $("#deleteBtn").prop("disabled", selectedCount === 0);
   }
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Toolbar button click handlers — each sends an AJAX POST to the
-  //     corresponding controller action. The actions are in the toolbar ONLY,
-  //     not in individual rows.
-  // </important>
-  // -------------------------------------------------------------------------
-
-  // <note> Block selected users </note>
+  // Block selected users with a confirmation dialog.
   $("#blockBtn").on("click", function() {
     var selectedIds = getSelectedUserIds();
     if (selectedIds.length === 0) return;
@@ -123,7 +90,7 @@ $(document).ready(function() {
     });
   });
 
-  // <note> Unblock selected users </note>
+  // Unblock selected users.
   $("#unblockBtn").on("click", function() {
     var selectedIds = getSelectedUserIds();
     if (selectedIds.length === 0) return;
@@ -145,7 +112,7 @@ $(document).ready(function() {
     });
   });
 
-  // <important> Delete selected users (HARD DELETE — not soft delete) </important>
+  // Hard delete selected users (not a soft delete, this is permanent).
   $("#deleteBtn").on("click", function() {
     var selectedIds = getSelectedUserIds();
     if (selectedIds.length === 0) return;
@@ -174,7 +141,7 @@ $(document).ready(function() {
     });
   });
 
-  // <important> Delete all unverified users (bulk operation, no selection needed) </important>
+  // Delete all unverified accounts at once.
   $("#deleteUnverifiedBtn").on("click", function() {
     if (!confirm("Delete ALL unverified users? This action cannot be undone."))
       return;
@@ -195,11 +162,7 @@ $(document).ready(function() {
     });
   });
 
-  // -------------------------------------------------------------------------
-  // <nota bene>
-  //     Helper: Get the IDs of all selected (checked) row checkboxes.
-  //     Returns an array of GUID strings.
-  // </nota bene>
+  // Collect the data-user-id attribute from every checked row.
   function getSelectedUserIds() {
     var ids = [];
     $(".row-checkbox:checked").each(function() {
@@ -208,12 +171,8 @@ $(document).ready(function() {
     return ids;
   }
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Handle the JSON response from toolbar actions.
-  //     On success: show notification, deselect rows, refresh the table.
-  //     On failure: show error notification.
-  // </important>
+  // Process the JSON response from the toolbar actions.
+  // On success: notify, clear checkboxes, then reload the table.
   function handleActionResponse(response, actionType) {
     if (response && response.success) {
       showNotification(
@@ -221,14 +180,13 @@ $(document).ready(function() {
         "success",
       );
 
-      // <note> Deselect all rows after a successful action </note>
       $(".row-checkbox").prop("checked", false);
       $("#selectAllCheckbox")
         .prop("checked", false)
         .prop("indeterminate", false);
       updateToolbarButtons();
 
-      // <nota bene> Reload the table to reflect the changes (new data, sorting) </nota bene>
+      // Wait a beat so the user sees the notification, then reload.
       setTimeout(function() {
         location.reload();
       }, 1000);
@@ -237,13 +195,8 @@ $(document).ready(function() {
     }
   }
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Status messages — shown as Bootstrap toast notifications.
-  // </important>
-  // -------------------------------------------------------------------------
+  // Toast notifications that auto-dismiss after 5 seconds.
   function showNotification(message, type) {
-    // <note> Remove any existing toast to avoid stacking </note>
     $("#toast-container").remove();
 
     var toastClass = "";
@@ -285,20 +238,13 @@ $(document).ready(function() {
 
     $("body").append(toastHtml);
 
-    // <important> Show the toast and auto-dismiss after 5 seconds </important>
     var toastEl = new bootstrap.Toast($("#toast-container .toast")[0], {
       delay: 5000,
     });
     toastEl.show();
   }
 
-  // -------------------------------------------------------------------------
-  // <important>
-  //     Relative time display — converts ISO timestamps to human-readable
-  //     relative time (e.g., "5 minutes ago", "less than a minute ago",
-  //     "3 weeks ago", "2 hours ago").
-  // </important>
-  // -------------------------------------------------------------------------
+  // Convert an ISO timestamp into a human readable relative time string.
   function updateRelativeTime() {
     $(".last-seen-cell span[data-last-seen]").each(function() {
       var $el = $(this);
@@ -310,11 +256,6 @@ $(document).ready(function() {
     });
   }
 
-  // <note>
-  //     Format a Date as relative time string.
-  //     Examples: "less than a minute ago", "5 minutes ago",
-  //     "2 hours ago", "3 days ago", "just now"
-  // </note>
   function formatRelativeTime(date) {
     var now = new Date();
     var diffSeconds = Math.floor((now - date) / 1000);
@@ -347,18 +288,11 @@ $(document).ready(function() {
     return diffMonths + " month" + (diffMonths === 1 ? "" : "s") + " ago";
   }
 
-  // <important>
-  //     Update relative time every 30 seconds and on initial load.
-  //     This keeps the display current without requiring a page refresh.
-  // </important>
+  // Refresh relative time on load and every 30 seconds.
   updateRelativeTime();
   setInterval(updateRelativeTime, 30000);
 
-  // -------------------------------------------------------------------------
-  // <note>
-  //     Initialize Bootstrap tooltips on toolbar buttons and any
-  //     other elements with data-bs-toggle="tooltip".
-  // </note>
+  // Turn on Bootstrap tooltips anywhere they are used.
   var tooltipTriggerList = [].slice.call(
     document.querySelectorAll('[data-bs-toggle="tooltip"]'),
   );

@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UserManagementApp.Infrastructure.Data;
 
-//     Represents an application user in the system.
 public class User
 {
     [Key]

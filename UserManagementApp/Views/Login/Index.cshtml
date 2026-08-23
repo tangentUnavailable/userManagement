@@ -23,17 +23,19 @@
                         var emailHasErrors = ViewData.ModelState["Email"]?.Errors.Any() == true;
                         var passwordHasErrors = ViewData.ModelState["Password"]?.Errors.Any() == true;
                     }
-                    @if (ViewData.ModelState.ErrorCount > 0 || !string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
+                    @* A non-field redirect/sign-out message (ViewData["ErrorMessage"]) renders here as an alert. Field errors (Email/Password) render inline next to each input, so they're not shown twice. *@
+                    @if (!string.IsNullOrEmpty(ViewData["ErrorMessage"]?.ToString()))
                     {
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            @if (emailHasErrors)
-                            {
-                                <div>@ViewData.ModelState["Email"]!.Errors.First().ErrorMessage</div>
-                            }
-                            @if (passwordHasErrors)
-                            {
-                                <div>@ViewData.ModelState["Password"]!.Errors.First().ErrorMessage</div>
-                            }
+                            <div>@ViewData["ErrorMessage"]</div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(ViewData["Notice"]?.ToString()))
+                    {
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            @ViewData["Notice"]
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         </div>
                     }

@@ -21,12 +21,28 @@ public class LoginController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index(string? returnUrl = null)
+    public async Task<IActionResult> Index(string? returnUrl = null, string? notice = null)
     {
         if (User?.Identity?.IsAuthenticated == true)
+        {
+            // A self block/delete routed us here while the session cookie was
+            // still valid. If a sign-out reason was supplied, clear the now
+            // invalid session and show the reason on the login page instead of
+            // bouncing back to /List (which would immediately re-trigger the
+            // middleware sign-out and drop the message).
+            if (!string.IsNullOrEmpty(notice))
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                ViewData["Notice"] = notice;
+                return View("Index", new LoginViewModel { ReturnUrl = "/List" });
+            }
+
             return RedirectToAction("Index", "List");
+        }
 
         ViewData["ReturnUrl"] = returnUrl ?? "/List";
+        if (!string.IsNullOrEmpty(notice))
+            ViewData["Notice"] = notice;
         return View("Index", new LoginViewModel { ReturnUrl = returnUrl ?? "/List" });
     }
 
